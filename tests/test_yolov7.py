@@ -1,6 +1,6 @@
 import unittest
 
-from tests.test_utils import TestConstants
+from test_utils import TestConstants
 
 DEVICE = "cpu"
 
