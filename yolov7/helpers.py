@@ -25,8 +25,8 @@ def load_model(model_path, device=None, verbose=False, trace=True, size=640, hal
     (Adapted from yolov7.hubconf.create)
     """
     # set logging
-    if not verbose:
-        LOGGER.setLevel(logging.WARNING)
+   # if not verbose:
+   #     LOGGER.setLevel(logging.WARNING)
 
     # set device if not given
     if device is None:
