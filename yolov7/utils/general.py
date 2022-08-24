@@ -123,7 +123,7 @@ def check_requirements(requirements='requirements.txt', exclude=()):
 @contextlib.contextmanager
 def yolov7_in_syspath():
     """
-    Temporarily add yolov5 folder to `sys.path`.
+    Temporarily add yolov7 folder to `sys.path`.
     
     torch.hub handles it in the same way: https://github.com/pytorch/pytorch/blob/75024e228ca441290b6a1c2e564300ad507d7af6/torch/hub.py#L387
     
