@@ -28,7 +28,7 @@ from yolov7.utils.autoanchor import check_anchors
 from yolov7.utils.datasets import create_dataloader
 from yolov7.utils.general import labels_to_class_weights, increment_path, labels_to_image_weights, init_seeds, \
     fitness, strip_optimizer, get_latest_run, check_dataset, check_file, check_git_status, check_img_size, \
-    check_requirements, print_mutation, set_logging, one_cycle, colorstr
+    check_requirements, print_mutation, set_logging, one_cycle, colorstr,yolov7_in_syspath
 from yolov7.utils.google_utils import attempt_download
 from yolov7.utils.loss import ComputeLoss, ComputeLossOTA
 from yolov7.utils.plots import plot_images, plot_labels, plot_results, plot_evolution
@@ -83,8 +83,10 @@ def train(hyp, opt, device, tb_writer=None):
     pretrained = weights.endswith('.pt')
     if pretrained:
         with torch_distributed_zero_first(rank):
-            attempt_download(weights)  # download if not found locally
-        ckpt = torch.load(weights, map_location=device)  # load checkpoint
+            weights=attempt_download(weights)
+              # download if not found locally
+        with yolov7_in_syspath():
+            ckpt = torch.load(weights, map_location=device)  # load checkpoint
         model = Model(opt.cfg or ckpt['model'].yaml, ch=3, nc=nc, anchors=hyp.get('anchors')).to(device)  # create
         exclude = ['anchor'] if (opt.cfg or hyp.get('anchors')) and not opt.resume else []  # exclude keys
         state_dict = ckpt['model'].float().state_dict()  # to FP32
@@ -456,22 +458,23 @@ def train(hyp, opt, device, tb_writer=None):
                         'optimizer': optimizer.state_dict(),
                         'wandb_id': wandb_logger.wandb_run.id if wandb_logger.wandb else None}
 
-                # Save last, best and delete
-                torch.save(ckpt, last)
-                if best_fitness == fi:
-                    torch.save(ckpt, best)
-                if (best_fitness == fi) and (epoch >= 200):
-                    torch.save(ckpt, wdir / 'best_{:03d}.pt'.format(epoch))
-                if epoch == 0:
-                    torch.save(ckpt, wdir / 'epoch_{:03d}.pt'.format(epoch))
-                elif ((epoch+1) % 25) == 0:
-                    torch.save(ckpt, wdir / 'epoch_{:03d}.pt'.format(epoch))
-                elif epoch >= (epochs-5):
-                    torch.save(ckpt, wdir / 'epoch_{:03d}.pt'.format(epoch))
-                if wandb_logger.wandb:
-                    if ((epoch + 1) % opt.save_period == 0 and not final_epoch) and opt.save_period != -1:
-                        wandb_logger.log_model(
-                            last.parent, opt, epoch, fi, best_model=best_fitness == fi)
+               # Save last, best and delete
+                with yolov7_in_syspath():
+                    torch.save(ckpt, last)
+                    if best_fitness == fi:
+                        torch.save(ckpt, best)
+                    if (best_fitness == fi) and (epoch >= 200):
+                        torch.save(ckpt, wdir / 'best_{:03d}.pt'.format(epoch))
+                    if epoch == 0:
+                        torch.save(ckpt, wdir / 'epoch_{:03d}.pt'.format(epoch))
+                    elif ((epoch+1) % 25) == 0:
+                        torch.save(ckpt, wdir / 'epoch_{:03d}.pt'.format(epoch))
+                    elif epoch >= (epochs-5):
+                        torch.save(ckpt, wdir / 'epoch_{:03d}.pt'.format(epoch))
+                    if wandb_logger.wandb:
+                        if ((epoch + 1) % opt.save_period == 0 and not final_epoch) and opt.save_period != -1:
+                            wandb_logger.log_model(
+                                last.parent, opt, epoch, fi, best_model=best_fitness == fi)
                 del ckpt
 
         # end epoch ----------------------------------------------------------------------------------------------------
