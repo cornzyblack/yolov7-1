@@ -86,13 +86,16 @@ def attempt_load(weights, map_location=None):
     
     with yolov7_in_syspath():
         from models.yolo import Detect, Model
+        
     model = Ensemble()
-    
     for w in weights if isinstance(weights, list) else [weights]:
-        attempt_download(w)
-        ckpt = torch.load(w, map_location=map_location)  # load
-        model.append(ckpt['ema' if ckpt.get('ema') else 'model'].float().fuse().eval())  # FP32 model
-    
+        with yolov7_in_syspath():
+        #attempt_download(w)
+            ckpt = torch.load(w, map_location=map_location)  # load
+        ckpt = (ckpt.get('ema') or ckpt['model']).to(device).float()  # FP32 model
+        #model.append(ckpt['ema' if ckpt.get('ema') else 'model'].float().fuse().eval())  # FP32 model
+        model.append(ckpt.fuse().eval() if fuse else ckpt.eval())  # fused or un-fused model in eval mode
+        
     # Compatibility updates
     for m in model.modules():
         if type(m) in [nn.Hardswish, nn.LeakyReLU, nn.ReLU, nn.ReLU6, nn.SiLU]:
