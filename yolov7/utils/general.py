@@ -120,7 +120,7 @@ def check_requirements(requirements='requirements.txt', exclude=()):
             f"{prefix} ⚠️ {colorstr('bold', 'Restart runtime or rerun command for updates to take effect')}\n"
         print(emojis(s))  # emoji-safe
 
-@contextlib.contextmanager
+
 def yolov7_in_syspath():
     """
     Temporarily add yolov7 folder to `sys.path`.
