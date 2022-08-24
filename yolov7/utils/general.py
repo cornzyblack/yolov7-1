@@ -120,7 +120,24 @@ def check_requirements(requirements='requirements.txt', exclude=()):
             f"{prefix} ⚠️ {colorstr('bold', 'Restart runtime or rerun command for updates to take effect')}\n"
         print(emojis(s))  # emoji-safe
 
-
+@contextlib.contextmanager
+def yolov5_in_syspath():
+    """
+    Temporarily add yolov5 folder to `sys.path`.
+    
+    torch.hub handles it in the same way: https://github.com/pytorch/pytorch/blob/75024e228ca441290b6a1c2e564300ad507d7af6/torch/hub.py#L387
+    
+    Proper fix for: #22, #134, #353, #1155, #1389, #1680, #2531, #3071   
+    No need for such workarounds: #869, #1052, #2949
+    """
+    yolov5_folder_dir = str(Path(__file__).parents[1].absolute())
+    try:
+        sys.path.insert(0, yolov5_folder_dir)
+        yield
+    finally:
+        sys.path.remove(yolov5_folder_dir)
+        
+        
 def check_img_size(img_size, s=32):
     # Verify img_size is a multiple of stride s
     new_size = make_divisible(img_size, int(s))  # ceil gs-multiple
