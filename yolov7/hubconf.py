@@ -10,7 +10,7 @@ from pathlib import Path
 import torch
 
 from yolov7.models.yolo import Model
-from yolov7.utils.general import check_requirements, set_logging
+from yolov7.utils.general import check_requirements, set_logging,yolov7_in_syspath
 from yolov7.utils.google_utils import attempt_download
 from yolov7.utils.torch_utils import select_device
 
@@ -35,13 +35,11 @@ def create(name, pretrained, channels, classes, autoshape):
         cfg = list((Path(__file__).parent / 'cfg').rglob(f'{name}.yaml'))[0]  # model.yaml path
         model = Model(cfg, channels, classes)
         if pretrained:
-            fname = f'{name}.pt'  # checkpoint filename
-            attempt_download(fname)  # download if not found locally
-            ckpt = torch.load(fname, map_location=torch.device('cpu'))  # load
-            msd = model.state_dict()  # model state_dict
+            with yolov7_in_syspath:
+                ckpt = torch.load(attempt_download(path), map_location=device)  # load
             csd = ckpt['model'].float().state_dict()  # checkpoint state_dict as FP32
-            csd = {k: v for k, v in csd.items() if msd[k].shape == v.shape}  # filter
-            model.load_state_dict(csd, strict=False)  # load
+            csd = intersect_dicts(csd, model.state_dict(), exclude=['anchors'])  # intersect
+            model.load_state_dict(csd, strict=False)  # load      
             if len(ckpt['model'].names) == classes:
                 model.names = ckpt['model'].names  # set class names attribute
             if autoshape:
