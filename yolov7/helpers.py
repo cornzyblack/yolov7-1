@@ -58,7 +58,7 @@ class YOLOv7:
         Load yolov7 weight.
         """
         Path(self.model_path).parents[0].mkdir(parents=True, exist_ok=True)
-        self.model = load_model(model_path=model_path, device=device, trace=True, size=640)
+        self.model = load_model(model_path=self.model_path, device=device, trace=True, size=640)
 
     def predict(self, image_list, size=640, augment=False):
         """
