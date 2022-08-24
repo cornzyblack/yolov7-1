@@ -4,6 +4,7 @@ import torch.nn as nn
 
 from yolov7.models.common import Conv, DWConv
 from yolov7.utils.google_utils import attempt_download
+from yolov7.utils.general import yolov7_in_syspath
 
 
 class CrossConv(nn.Module):
