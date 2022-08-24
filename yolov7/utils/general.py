@@ -119,16 +119,16 @@ def check_requirements(requirements='requirements.txt', exclude=()):
         source = file.resolve() if 'file' in locals() else requirements
         s = f"{prefix} {n} package{'s' * (n > 1)} updated per {source}\n" \
             f"{prefix} ⚠️ {colorstr('bold', 'Restart runtime or rerun command for updates to take effect')}\n"
-        print(emojis(s))  # emoji-safe
 
- class Profile(contextlib.ContextDecorator):
+        print(emojis(s))  # emoji-safe
+class Profile(contextlib.ContextDecorator):
+    
     # Usage: @Profile() decorator or 'with Profile():' context manager
     def __enter__(self):
         self.start = time.time()
 
     def __exit__(self, type, value, traceback):
         print(f'Profile results: {time.time() - self.start:.5f}s')
-
 
 class Timeout(contextlib.ContextDecorator):
     # Usage: @Timeout(seconds) decorator or 'with Timeout(seconds):' context manager
@@ -150,7 +150,6 @@ class Timeout(contextlib.ContextDecorator):
             signal.alarm(0)  # Cancel SIGALRM if it's scheduled
             if self.suppress and exc_type is TimeoutError:  # Suppress TimeoutError
                 return True
-
 
 class WorkingDirectory(contextlib.ContextDecorator):
     # Usage: @WorkingDirectory(dir) decorator or 'with WorkingDirectory(dir):' context manager
