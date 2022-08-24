@@ -49,7 +49,7 @@ class YOLOv7:
         self.device = device
         if load_on_init:
             Path(model_path).parents[0].mkdir(parents=True, exist_ok=True)
-            self.model = load_model(model_path=model_path, device=device, trace=True, size=640)
+            self.model = load_model(model_path=self.model_path, device=device, trace=True, size=640)
         else:
             self.model = None
 
