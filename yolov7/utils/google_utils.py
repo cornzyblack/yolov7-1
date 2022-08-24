@@ -21,13 +21,32 @@ def attempt_download(file, repo='WongKinYiu/yolov7'):
     file = Path(str(file).strip().replace("'", '').lower())
 
     if not file.exists():
-        try:
-            response = requests.get(f'https://api.github.com/repos/{repo}/releases/latest').json()  # github api
-            assets = [x['name'] for x in response['assets']]  # release assets
-            tag = response['tag_name']  # i.e. 'v1.0'
-        except:  # fallback plan
-            assets = ['yolov7.pt']
-            tag = subprocess.check_output('git tag', shell=True).decode().split()[-1]
+#         try:
+#             response = requests.get(f'https://api.github.com/repos/{repo}/releases/latest').json()  # github api
+#             assets = [x['name'] for x in response['assets']]  # release assets
+#             tag = response['tag_name']  # i.e. 'v1.0'
+#         except:  # fallback plan
+#             assets = ['yolov7.pt']
+#             tag = subprocess.check_output('git tag', shell=True).decode().split()[-1]
+
+
+            response = requests.get(
+                f'https://api.github.com/repos/{repo}/releases').json()  # github api
+            if len(response) > 0:
+                release_assets = response[0]  # get dictionary of assets
+                # Get names of assets if it rleases exists
+                assets = [release_asset['name']
+                          for release_asset in release_assets['assets']]
+                # Get first tag which is the latest tag
+                tag = release_assets.get("tag_name")
+        except KeyError:  # fallback plan
+            tag = subprocess.check_output(
+                'git tag', shell=True).decode().split()[-1]
+        except subprocess.CalledProcessError:  # fallback to default release can't get tag
+            tag = "v0.1"
+
+
+
 
         name = file.name
         if name in assets:
