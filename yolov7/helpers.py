@@ -73,13 +73,16 @@ class YOLOv7:
         Returns results as a yolov7.models.common.Detections object.
         """
         assert self.model is not None, "before predict, you need to call .load_model()"
-        results = self.model(im=image_list, size=size, augment=augment)
+        from PIL import Image
+
+        img = Image.open(image_list)
+        results = self.model(img, size=size, augment=augment)
         return results
 
 
 if __name__ == "__main__":
     model_path = "yolov7/weights/yolov7.pt"
-    device = "cuda"
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = load_model(model_path, device, trace=True, size=640)
 
     from PIL import Image
