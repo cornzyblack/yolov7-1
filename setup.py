@@ -37,7 +37,7 @@ setuptools.setup(
     install_requires=get_requirements(),
     extras_require={"tests": ["pytest"]},
     include_package_data=True,
-    options={'bdist_wheel':{'python_tag':'py36.py37.py38'}},
+    options={"bdist_wheel": {"python_tag": "py36.py37.py38"}},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: GNU General Public License (GPL)",
@@ -56,8 +56,9 @@ setuptools.setup(
         "Topic :: Scientific/Engineering :: Image Recognition",
     ],
     keywords="machine-learning, deep-learning, ml, pytorch, YOLO, object-detection, vision, YOLOv3, YOLOv4, YOLOv6,YOLOv7",
-    entry_points={'console_scripts': [
-        "yolov7=yolov7.cli:app",
+    entry_points={
+        "console_scripts": [
+            "yolov7=yolov7.cli:app",
         ],
-                  }
+    },
 )
