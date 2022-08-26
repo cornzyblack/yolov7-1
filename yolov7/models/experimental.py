@@ -90,7 +90,7 @@ class Ensemble(nn.ModuleList):
         return y, None  # inference, train output
 
 
-def attempt_load(weights, map_location=None, fuse=True):
+def attempt_load(weights, map_location=None, inplace=True, fuse=True):
     # Loads an ensemble of models weights=[a,b,c] or a single model weights=[a] or weights=a
 
     with yolov7_in_syspath():
@@ -99,8 +99,9 @@ def attempt_load(weights, map_location=None, fuse=True):
     model = Ensemble()
     for w in weights if isinstance(weights, list) else [weights]:
         with yolov7_in_syspath():
-            ckpt = torch.load(attempt_download(weights), map_location="cpu")  # load
+            ckpt = torch.load(attempt_download(w), map_location=map_location)  # load
         device = "cuda" if torch.cuda.is_available() else "cpu"
+
         ckpt = (ckpt.get("ema") or ckpt["model"]).to(device).float()  # FP32 model
         # model.append(ckpt['ema' if ckpt.get('ema') else 'model'].float().fuse().eval())  # FP32 model
         model.append(
@@ -109,11 +110,26 @@ def attempt_load(weights, map_location=None, fuse=True):
 
     # Compatibility updates
     for m in model.modules():
-        if type(m) in [nn.Hardswish, nn.LeakyReLU, nn.ReLU, nn.ReLU6, nn.SiLU]:
-            m.inplace = True  # pytorch 1.7.0 compatibility
-        elif type(m) is nn.Upsample:
+        t = type(m)
+        if t in [
+            nn.Hardswish,
+            nn.LeakyReLU,
+            nn.ReLU,
+            nn.ReLU6,
+            nn.SiLU,
+            Detect,
+            Model,
+        ]:
+            m.inplace = inplace
+            if t is Detect:
+                if not isinstance(
+                    m.anchor_grid, list
+                ):  # new Detect Layer compatibility
+                    delattr(m, "anchor_grid")
+                    setattr(m, "anchor_grid", [torch.zeros(1)] * m.nl)
+        elif t is nn.Upsample:
             m.recompute_scale_factor = None  # torch 1.11.0 compatibility
-        elif type(m) is Conv:
+        elif t is Conv:
             m._non_persistent_buffers_set = set()  # pytorch 1.6.0 compatibility
 
     if len(model) == 1:
