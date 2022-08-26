@@ -100,7 +100,7 @@ def attempt_load(weights, map_location=None, fuse=True):
     for w in weights if isinstance(weights, list) else [weights]:
         with yolov7_in_syspath():
             attempt_download(w)
-            ckpt = torch.load(w, map_location="cpu")  # load
+            ckpt = torch.load(w, map_location=map_location)  # load
         device = "cuda" if torch.cuda.is_available() else "cpu"
         ckpt = (ckpt.get("ema") or ckpt["model"]).to(device).float()  # FP32 model
         # model.append(ckpt['ema' if ckpt.get('ema') else 'model'].float().fuse().eval())  # FP32 model
